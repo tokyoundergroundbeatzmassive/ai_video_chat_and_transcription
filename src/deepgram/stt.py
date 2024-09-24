@@ -77,4 +77,5 @@ async def process_audio_data(data):
 async def close_deepgram_connection():
     if dg_connection:
         print("Closing Deepgram connection")  # デバッグメッセージ
+        dg_connection.send({"type": "Finalize"})
         dg_connection.finish()
