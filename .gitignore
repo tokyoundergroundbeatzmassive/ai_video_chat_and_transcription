@@ -1,0 +1,5 @@
+/venv/
+.env
+mypy.ini
+/temp/
+.DS_Store
