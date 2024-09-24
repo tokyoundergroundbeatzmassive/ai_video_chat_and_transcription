@@ -53,6 +53,9 @@ startWindowBtn.addEventListener('click', async () => {
         streamVideo.srcObject = stream;
         statusElement.textContent = "Window stream started";
 
+        // Stream Audioをミュート
+        streamVideo.muted = true;
+
         // オーディオキャプチャを開始
         const socket = startWebSocket(`ws://${window.location.host}/transcribe`, async (event) => {
             if (typeof event.data === 'string') {
