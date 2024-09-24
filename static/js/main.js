@@ -49,9 +49,27 @@ startCameraBtn.addEventListener('click', async () => {
 startWindowBtn.addEventListener('click', async () => {
     // ウィンドウの映像を取得して表示
     try {
-        stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
         streamVideo.srcObject = stream;
         statusElement.textContent = "Window stream started";
+
+        // オーディオキャプチャを開始
+        const socket = startWebSocket(`ws://${window.location.host}/transcribe`, async (event) => {
+            if (typeof event.data === 'string') {
+                // 文字列データ（おそらく転写結果）を受信した場合
+                console.log('Received transcription:', event.data);
+                // ここで受信したテキストを適切に表示する処理を追加
+                // 例: statusElement.textContent = `Transcription: ${event.data}`;
+            } else if (event.data instanceof Blob) {
+                // Blobデータ（おそらくビデオデータ）を受信した場合
+                const videoUrl = URL.createObjectURL(event.data);
+                streamVideo.src = videoUrl;
+            } else {
+                console.warn('Received unknown data type:', typeof event.data);
+            }
+        }, async () => {
+            startAudioCapture(socket, stream);
+        });
     } catch (err) {
         console.error('ウィンドウのアクセスに失敗しました:', err);
         statusElement.textContent = "Failed to start window stream";
