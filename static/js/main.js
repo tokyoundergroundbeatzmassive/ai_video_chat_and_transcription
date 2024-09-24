@@ -30,7 +30,12 @@ transcribeBtn.addEventListener('click', async () => {
         }
     }, async () => {
         // オーディオキャプチャを開始
-        startAudioCapture(socket);
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            startAudioCapture(socket, stream);
+        } catch (err) {
+            console.error('オーディオのアクセスに失敗しました:', err);
+        }
     });
 });
 
