@@ -36,7 +36,7 @@ async def transcribe_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
 
     async def send_transcript(transcript):
-        print(f"Sending transcript to client: {transcript}")  # デバッグメッセージ
+        # print(f"Sending transcript to client: {transcript}")  # デバッグメッセージ
         await websocket.send_text(transcript)
 
     try:

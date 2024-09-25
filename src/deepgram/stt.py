@@ -39,16 +39,40 @@ async def initialize_deepgram_connection(callback):
         print(f"on_error: {error}")  # デバッグメッセージ
 
     def on_message(self, result, **kwargs):
-        # print("on_message")  # デバッグメッセージ
+        print("Full response:")
+        print(result)
         try:
-            transcript = result.channel.alternatives[0].transcript
-            # print(f"Transcript received: {transcript}")  # デバッグメッセージ
-            if len(transcript) > 0:
-                print(transcript)
-                asyncio.run_coroutine_threadsafe(callback(transcript), main_loop)
+            alternatives = result.channel.alternatives
+            for alternative in alternatives:
+                if hasattr(alternative, 'words') and alternative.words:
+                    # 話者ごとのトランスクリプトを格納する辞書
+                    speaker_transcripts = {}
+                    current_speaker = None
+                    current_transcript = []
+
+                    for word in alternative.words:
+                        if word.speaker != current_speaker:
+                            if current_speaker is not None:
+                                speaker_transcripts[current_speaker] = " ".join(current_transcript)
+                            current_speaker = word.speaker
+                            current_transcript = []
+                        current_transcript.append(word.word)
+
+                    # 最後の話者のトランスクリプトを追加
+                    if current_speaker is not None:
+                        speaker_transcripts[current_speaker] = " ".join(current_transcript)
+
+                    for speaker, transcript in speaker_transcripts.items():
+                        print(f"Speaker {speaker}: {transcript}")
+                        asyncio.run_coroutine_threadsafe(callback(f"Speaker {speaker}: {transcript}"), main_loop)
+                else:
+                    transcript = alternative.transcript
+                    if len(transcript) > 0:
+                        print(f"Unknown Speaker: {transcript}")
+                        asyncio.run_coroutine_threadsafe(callback(f"Unknown Speaker: {transcript}"), main_loop)
         except Exception as e:
-            print(f"Error processing result: {e}")  # デバッグメッセージ
-            print(f"Result: {result}") 
+            print(f"Error processing result: {e}")
+            print(f"Result: {result}")
 
     print("Setting up event handlers")  # デバッグメッセージ
     dg_connection.on(LiveTranscriptionEvents.Open, on_open)
@@ -60,7 +84,13 @@ async def initialize_deepgram_connection(callback):
     dg_connection.on(LiveTranscriptionEvents.Transcript, on_message)
     print("Event handler for Transcript set") 
 
-    options = LiveOptions(model="nova-2", language="ja-JP", encoding="linear16", sample_rate=44100)
+    options = LiveOptions(
+        model="nova-2",
+        language="ja-JP",
+        encoding="linear16",
+        sample_rate=44100,
+        diarize=True,
+        multichannel=True)
     
     print("Starting Deepgram connection")  # デバッグメッセージ
     if not dg_connection.start(options):
