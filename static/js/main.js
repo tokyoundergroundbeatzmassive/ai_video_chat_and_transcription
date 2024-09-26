@@ -1,5 +1,6 @@
 import { startAudioCapture } from './audioCapture.js';
 import { captureImage } from './imageCapture.js';
+import { sendAudioToWhisper1 } from './sendAudioToWhisper1.js';
 import { startWebSocket, stopWebSocket } from './websocket.js';
 
 const startCameraBtn = document.getElementById('startCameraBtn');
@@ -9,9 +10,46 @@ const captureBtn = document.getElementById('captureBtn');
 const statusElement = document.getElementById('status');
 const streamVideo = document.getElementById('streamVideo');
 const transcribeBtn = document.getElementById('transcribeBtn');
+const recordBtn = document.getElementById('recordBtn');
 
 let stream;
 let captureInterval;
+let mediaRecorder;
+let audioChunks = [];
+
+recordBtn.addEventListener('mousedown', async () => {
+    try {
+        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' }); // Use audio/webm
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // Use audio/webm
+            audioChunks = [];
+            await sendAudioToWhisper1(audioBlob);
+        };
+        mediaRecorder.start();
+        statusElement.textContent = "Recording...";
+    } catch (err) {
+        console.error('オーディオのアクセスに失敗しました:', err);
+        statusElement.textContent = "Failed to access audio";
+    }
+});
+
+recordBtn.addEventListener('mouseup', () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        statusElement.textContent = "Recording stopped";
+    }
+});
+
+recordBtn.addEventListener('mouseleave', () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        statusElement.textContent = "Recording stopped";
+    }
+});
 
 transcribeBtn.addEventListener('click', async () => {
     // WebSocket接続を開始
