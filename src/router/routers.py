@@ -3,14 +3,10 @@ from fastapi.responses import FileResponse
 from src.managers.websocket_manager import manager
 import os
 import shutil
-from src.deepgram.stt import initialize_deepgram_connection, process_audio_data, close_deepgram_connection
-from pydub import AudioSegment
-import requests
+from src.deepgram.stt import initialize_deepgram_connection, process_audio_data
 import dotenv
-from openai import OpenAI
+from src.openai.whisper1 import transcribe_with_whisper1
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 dotenv.load_dotenv()
 
@@ -80,31 +76,5 @@ async def transcribe_endpoint(websocket: WebSocket):
     #     await close_deepgram_connection()
 
 @router.post("/transcribe_audiofile/")
-async def transcribe_audiofile(file: UploadFile = File(...)):
-    try:
-        # ファイルの詳細情報をログに出力
-        print(f"Received file: {file.filename}")
-        print(f"Content type: {file.content_type}")
-
-        # ファイルを一時的に保存
-        temp_file_path = "/tmp/temp_audio_file.webm"
-        with open(temp_file_path, "wb") as temp_file:
-            content = await file.read()
-            temp_file.write(content)
-        
-        print(f"Saved temporary file to: {temp_file_path}")
-
-        # OpenAIのWhisper APIを使用して転写
-        with open(temp_file_path, "rb") as audio_file:
-            transcription = client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file,
-                language="ja"
-            )
-        
-        transcript = transcription.text
-        print(f"Transcription result: {transcript}")
-        return {"transcript": transcript}
-    except Exception as e:
-        print(f"Error: {e}")
-        return {"error": str(e)}
+async def transcribe_audiofile_endpoint(file: UploadFile = File(...)):
+    return await transcribe_with_whisper1(file)

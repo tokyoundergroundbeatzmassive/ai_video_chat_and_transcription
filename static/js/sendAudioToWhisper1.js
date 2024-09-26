@@ -2,12 +2,12 @@ export async function sendAudioToWhisper1(audioBlob) {
     const formData = new FormData();
     formData.append('file', audioBlob, 'audio.mpeg');
     try {
-        const response = await fetch('/transcribe_audiofile/', { // FastAPIのエンドポイントに送信
+        const response = await fetch('/transcribe_audiofile/', {
             method: 'POST',
             body: formData
         });
         const data = await response.json();
-        console.log('Transcription:', data);
+        // console.log('Transcription:', data);
 
         // 転写結果を抽出して表示
         if (data.transcript) {
