@@ -13,14 +13,7 @@ from src.config.config import TMP_DIR
 
 router = APIRouter()
 
-# @router.websocket("/ws")
-# async def websocket_endpoint(websocket: WebSocket):
-#     await manager.connect(websocket)
-#     try:
-#         while True:
-#             await websocket.receive_text()
-#     except:
-#         manager.disconnect(websocket)
+user_id = "test"
 
 @router.get("/")
 async def read_index():
@@ -82,7 +75,7 @@ async def transcribe_audiofile_endpoint(file: UploadFile = File(...)):
     image_paths = [os.path.join(TMP_DIR, image) for image in images]
 
     # 画像の説明を取得
-    image_description = get_image_description(text, image_paths)
+    image_description = get_image_description(text, image_paths, user_id)
 
     # 音声合成のために結合された説明を使用
     tts_result = await openai_tts(image_description, TMP_DIR)
