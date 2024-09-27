@@ -16,17 +16,14 @@ def get_image_description(text, image_paths):
                     "url": f"data:image/webp;base64,{encoded_image}"
                 }
             })
+
+    system_prompt = "Your text will be spoken by tts, so keep your response short and concise."
     
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": text},
-                    *image_contents
-                ],
-            }
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": [{"type": "text", "text": text}, *image_contents]},
         ],
         max_tokens=300,
     )
