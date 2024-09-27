@@ -17,7 +17,7 @@ async def transcribe_with_whisper1(file: UploadFile = File(...), tmp_dir: str = 
             content = await file.read()
             temp_file.write(content)
         
-        print(f"Saved temporary file to: {temp_file_path}")
+        # print(f"Saved temporary file to: {temp_file_path}")
 
         # OpenAIのWhisper APIを使用して転写
         with open(temp_file_path, "rb") as audio_file:
@@ -37,4 +37,4 @@ async def transcribe_with_whisper1(file: UploadFile = File(...), tmp_dir: str = 
         # 一時ファイルを削除
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-            print(f"Deleted temporary file: {temp_file_path}")
+            # print(f"Deleted temporary file: {temp_file_path}")

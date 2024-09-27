@@ -25,8 +25,8 @@ async def openai_tts(image_description: str, output_dir: str):
             for chunk in response.iter_bytes():
                 f.write(chunk)
 
-        print(f"Audio file saved to (full path): {output_file}")
-        print(f"Audio filename: {output_filename}")
+        # print(f"Audio file saved to (full path): {output_file}")
+        # print(f"Audio filename: {output_filename}")
         return {"audio_file": f"/tmp/{output_filename}"}
 
     except Exception as e:

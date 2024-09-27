@@ -60,7 +60,7 @@ async def transcribe_endpoint(websocket: WebSocket):
 @router.post("/transcribe_audiofile/")
 async def transcribe_audiofile_endpoint(file: UploadFile = File(...)):
     # デバッグ用ログ
-    print(f"Received file: {file.filename}")
+    # print(f"Received file: {file.filename}")
 
     # tmpフォルダから最新の4つのwebp画像を取得
     images = sorted(
@@ -69,7 +69,7 @@ async def transcribe_audiofile_endpoint(file: UploadFile = File(...)):
         reverse=True
     )[:4]
 
-    print(f"Found images: {images}")
+    # print(f"Found images: {images}")
 
     # 音声ファイルを転写
     transcription_result = await transcribe_with_whisper1(file, TMP_DIR)
@@ -108,7 +108,7 @@ async def delete_audio():
     try:
         # TMP_DIR内のすべてのmp3ファイルを取得
         mp3_files = glob.glob(os.path.join(TMP_DIR, "*.mp3"))
-        print(f"Found mp3 files: {mp3_files}")
+        # print(f"Found mp3 files: {mp3_files}")
         
         # 各ファイルを削除
         for file in mp3_files:
