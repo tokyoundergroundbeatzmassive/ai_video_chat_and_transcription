@@ -5,14 +5,14 @@ from openai import OpenAI
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-async def transcribe_with_whisper1(file: UploadFile = File(...)):
+async def transcribe_with_whisper1(file: UploadFile = File(...), tmp_dir: str = "/tmp"):
     try:
         # ファイルの詳細情報をログに出力
-        print(f"Received file: {file.filename}")
-        print(f"Content type: {file.content_type}")
+        # print(f"Received file: {file.filename}")
+        # print(f"Content type: {file.content_type}")
 
         # ファイルを一時的に保存
-        temp_file_path = "/tmp/temp_audio_file.webm"
+        temp_file_path = os.path.join(tmp_dir, "temp_audio_file.webm")
         with open(temp_file_path, "wb") as temp_file:
             content = await file.read()
             temp_file.write(content)
@@ -33,3 +33,8 @@ async def transcribe_with_whisper1(file: UploadFile = File(...)):
     except Exception as e:
         print(f"Error: {e}")
         return {"error": str(e)}
+    finally:
+        # 一時ファイルを削除
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+            print(f"Deleted temporary file: {temp_file_path}")

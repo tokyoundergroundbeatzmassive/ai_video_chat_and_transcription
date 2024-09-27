@@ -1,6 +1,5 @@
 import logging
 import os
-from dotenv import load_dotenv
 import asyncio
 from deepgram import (
     DeepgramClient,
@@ -8,8 +7,6 @@ from deepgram import (
     LiveOptions,
     DeepgramClientOptions
 )
-
-load_dotenv()
 
 API_KEY = os.getenv("DEEPGRAM_API_KEY")
 
@@ -23,7 +20,7 @@ deepgram = DeepgramClient(API_KEY, config)
 
 dg_connection = None
 
-main_loop = asyncio.get_event_loop()  # メインスレッドのイベントループを取得
+main_loop = asyncio.get_event_loop()
 
 async def initialize_deepgram_connection(callback):
     global dg_connection

@@ -1,55 +1,27 @@
 import { startAudioCapture } from './audioCapture.js';
-import { captureImage } from './imageCapture.js';
-import { sendAudioToWhisper1 } from './sendAudioToWhisper1.js';
+import { AudioRecorder } from './audioRecorder.js';
 import { startWebSocket, stopWebSocket } from './websocket.js';
 
 const startCameraBtn = document.getElementById('startCameraBtn');
 const startWindowBtn = document.getElementById('startWindowBtn');
 const stopBtn = document.getElementById('stopBtn');
-const captureBtn = document.getElementById('captureBtn');
+// const captureBtn = document.getElementById('captureBtn');
 const statusElement = document.getElementById('status');
 const streamVideo = document.getElementById('streamVideo');
 const transcribeBtn = document.getElementById('transcribeBtn');
 const recordBtn = document.getElementById('recordBtn');
+const audioRecorder = new AudioRecorder(streamVideo, statusElement);
 
 let stream;
-let captureInterval;
-let mediaRecorder;
-let audioChunks = [];
+// let captureInterval;
+// let mediaRecorder;
+// let audioChunks = [];
+let isCameraActive = false;
+// let isRecording = false;
 
-recordBtn.addEventListener('mousedown', async () => {
-    try {
-        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' }); // Use audio/webm
-        mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
-        };
-        mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // Use audio/webm
-            audioChunks = [];
-            await sendAudioToWhisper1(audioBlob);
-        };
-        mediaRecorder.start();
-        statusElement.textContent = "Recording...";
-    } catch (err) {
-        console.error('オーディオのアクセスに失敗しました:', err);
-        statusElement.textContent = "Failed to access audio";
-    }
-});
-
-recordBtn.addEventListener('mouseup', () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-        statusElement.textContent = "Recording stopped";
-    }
-});
-
-recordBtn.addEventListener('mouseleave', () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-        statusElement.textContent = "Recording stopped";
-    }
-});
+recordBtn.addEventListener('mousedown', () => audioRecorder.startRecording(isCameraActive));
+recordBtn.addEventListener('mouseup', () => audioRecorder.stopRecording());
+recordBtn.addEventListener('mouseleave', () => audioRecorder.stopRecording());
 
 transcribeBtn.addEventListener('click', async () => {
     // WebSocket接続を開始
@@ -83,9 +55,11 @@ startCameraBtn.addEventListener('click', async () => {
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
         streamVideo.srcObject = stream;
         statusElement.textContent = "Camera stream started";
+        isCameraActive = true;
     } catch (err) {
         console.error('カメラのアクセスに失敗しました:', err);
         statusElement.textContent = "Failed to start camera stream";
+        isCameraActive = false;
     }
 });
 
@@ -130,17 +104,4 @@ stopBtn.addEventListener('click', () => {
     }
     streamVideo.srcObject = null;
     statusElement.textContent = "Stream stopped";
-});
-
-// image captureの機能
-captureBtn.addEventListener('mousedown', () => {
-    captureInterval = setInterval(() => captureImage(streamVideo), 1000);
-});
-
-captureBtn.addEventListener('mouseup', () => {
-    clearInterval(captureInterval);
-});
-
-captureBtn.addEventListener('mouseleave', () => {
-    clearInterval(captureInterval);
 });
