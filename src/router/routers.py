@@ -1,6 +1,5 @@
 from fastapi import APIRouter, WebSocket, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 import glob
 from src.managers.websocket_manager import manager
 import os
@@ -17,7 +16,7 @@ user_id = "test"
 
 @router.get("/")
 async def read_index():
-    return FileResponse('static/index.html')
+    return FileResponse('templates/index.html')
 
 @router.post("/save_images/")
 async def upload_file(file: UploadFile = File(...)):
@@ -52,18 +51,12 @@ async def transcribe_endpoint(websocket: WebSocket):
 
 @router.post("/transcribe_audiofile/")
 async def transcribe_audiofile_endpoint(file: UploadFile = File(...)):
-    # デバッグ用ログ
-    # print(f"Received file: {file.filename}")
-
     # tmpフォルダから最新の4つのwebp画像を取得
     images = sorted(
         [f for f in os.listdir(TMP_DIR) if f.endswith(".webp")],
         key=lambda x: os.path.getmtime(os.path.join(TMP_DIR, x)),
         reverse=True
     )[:4]
-
-    # print(f"Found images: {images}")
-
     # 音声ファイルを転写
     transcription_result = await transcribe_with_whisper1(file, TMP_DIR)
     text = transcription_result.get("transcript", "")
@@ -93,7 +86,7 @@ async def transcribe_audiofile_endpoint(file: UploadFile = File(...)):
     return {
         "transcript": text,
         "image_description": image_description,
-        "tts_audio_file": tts_result  # この行が正しく設定されているか確認
+        "tts_audio_file": tts_result
     }
 
 @router.post("/delete-audio")

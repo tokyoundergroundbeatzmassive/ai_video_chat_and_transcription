@@ -1,11 +1,10 @@
-import { startAudioCapture } from './audioCapture.js';
-import { AudioRecorder } from './audioRecorder.js';
-import { startWebSocket, stopWebSocket } from './websocket.js';
+import { startAudioCapture } from './deepgram/audioCapture.js';
+import { startWebSocket, stopWebSocket } from './managers/websocket.js';
+import { AudioRecorder } from './openai/audioRecorder.js';
 
 const startCameraBtn = document.getElementById('startCameraBtn');
 const startWindowBtn = document.getElementById('startWindowBtn');
 const stopBtn = document.getElementById('stopBtn');
-// const captureBtn = document.getElementById('captureBtn');
 const statusElement = document.getElementById('status');
 const streamVideo = document.getElementById('streamVideo');
 const transcribeBtn = document.getElementById('transcribeBtn');
@@ -13,11 +12,7 @@ const recordBtn = document.getElementById('recordBtn');
 const audioRecorder = new AudioRecorder(streamVideo, statusElement);
 
 let stream;
-// let captureInterval;
-// let mediaRecorder;
-// let audioChunks = [];
 let isCameraActive = false;
-// let isRecording = false;
 
 recordBtn.addEventListener('mousedown', () => audioRecorder.startRecording(isCameraActive));
 recordBtn.addEventListener('mouseup', () => audioRecorder.stopRecording());
