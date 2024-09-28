@@ -13,6 +13,25 @@ const audioRecorder = new AudioRecorder(streamVideo, statusElement);
 
 let stream;
 let isCameraActive = false;
+let isSpaceKeyPressed = false;
+
+// スペースキーが押されたときの処理
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Space' && !isSpaceKeyPressed) {
+        isSpaceKeyPressed = true;
+        audioRecorder.startRecording(isCameraActive);
+        recordBtn.classList.add('active');
+    }
+});
+
+// スペースキーが離されたときの処理
+document.addEventListener('keyup', (event) => {
+    if (event.code === 'Space') {
+        isSpaceKeyPressed = false;
+        audioRecorder.stopRecording();
+        recordBtn.classList.remove('active');
+    }
+});
 
 recordBtn.addEventListener('mousedown', () => audioRecorder.startRecording(isCameraActive));
 recordBtn.addEventListener('mouseup', () => audioRecorder.stopRecording());

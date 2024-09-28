@@ -4,7 +4,7 @@ export async function startAudioCapture(socket, stream) {
         const audioContext = new AudioContext();
 
         // AudioWorkletを追加
-        await audioContext.audioWorklet.addModule('static/js/audioProcessor.js');
+        await audioContext.audioWorklet.addModule('/static/js/deepgram/audioProcessor.js');
         const audioProcessor = new AudioWorkletNode(audioContext, 'audio-processor');
 
         let packetCount = 0;
