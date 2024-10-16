@@ -87,13 +87,24 @@ startWindowBtn.addEventListener('click', async () => {
         // Stream Audioをミュート
         streamVideo.muted = true;
 
+        // transcriptionHistory要素を取得
+        const transcriptionHistoryElement = document.getElementById('transcriptionHistory');
+
         // オーディオキャプチャを開始
         const socket = startWebSocket(`ws://${window.location.host}/transcribe`, async (event) => {
             if (typeof event.data === 'string') {
                 // 文字列データ（おそらく転写結果）を受信した場合
                 console.log('Received transcription:', event.data);
-                // ここで受信したテキストを適切に表示する処理を追加
-                // 例: statusElement.textContent = `Transcription: ${event.data}`;
+                
+                // 新しい段落要素を作成
+                const newTranscription = document.createElement('p');
+                newTranscription.textContent = event.data;
+                
+                // 新しい転写結果を履歴の最後に追加
+                transcriptionHistoryElement.appendChild(newTranscription);
+                
+                // 最新の転写結果が見えるようにスクロール
+                transcriptionHistoryElement.scrollTop = transcriptionHistoryElement.scrollHeight;
             } else if (event.data instanceof Blob) {
                 // Blobデータ（おそらくビデオデータ）を受信した場合
                 const videoUrl = URL.createObjectURL(event.data);

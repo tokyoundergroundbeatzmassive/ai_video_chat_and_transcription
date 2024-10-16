@@ -3,4 +3,5 @@
 mypy.ini
 /tmp/
 .DS_Store
-/__pycache__/
+__pycache__/
+*_log_*.txt

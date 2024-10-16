@@ -1,12 +1,22 @@
 import logging
 import os
 import asyncio
+from datetime import datetime
 from deepgram import (
     DeepgramClient,
     LiveTranscriptionEvents,
     LiveOptions,
     DeepgramClientOptions
 )
+
+# ログファイルのパスを設定する関数
+def get_log_file_path():
+    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"transcription_log_{current_time}.txt"
+    return os.path.join(os.getcwd(), file_name)
+
+# グローバル変数としてログファイルのパスを保持
+log_file_path = None
 
 API_KEY = os.getenv("DEEPGRAM_API_KEY")
 
@@ -24,6 +34,12 @@ main_loop = asyncio.get_event_loop()
 
 async def initialize_deepgram_connection(callback):
     global dg_connection
+    global log_file_path
+    
+    # 新しいログファイルパスを生成
+    log_file_path = get_log_file_path()
+    print(f"New transcription session started. Log file: {log_file_path}")
+    
     dg_connection = deepgram.listen.live.v("1")
 
     def on_open(self, open, **kwargs):
@@ -31,11 +47,16 @@ async def initialize_deepgram_connection(callback):
 
     def on_close(self, close, **kwargs):
         print("on_close")  # デバッグメッセージ
+        # WebSocket接続が閉じられたときに新しいログファイルを準備
+        global log_file_path
+        log_file_path = get_log_file_path()
+        print(f"WebSocket closed. New log file prepared: {log_file_path}")
 
     def on_error(self, error, **kwargs):
         print(f"on_error: {error}")  # デバッグメッセージ
 
     def on_message(self, result, **kwargs):
+        global log_file_path  # グローバル変数を使用
         print("Full response:")
         print(result)
         try:
@@ -61,11 +82,19 @@ async def initialize_deepgram_connection(callback):
 
                     for speaker, transcript in speaker_transcripts.items():
                         print(f"Speaker {speaker}: {transcript}")
+                        # ファイルに書き込む
+                        with open(log_file_path, "a", encoding="utf-8") as log_file:
+                            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            log_file.write(f"[{timestamp}] Speaker {speaker}: {transcript}\n")
                         asyncio.run_coroutine_threadsafe(callback(f"Speaker {speaker}: {transcript}"), main_loop)
                 else:
                     transcript = alternative.transcript
                     if len(transcript) > 0:
                         print(f"Unknown Speaker: {transcript}")
+                        # ファイルに書き込む
+                        with open(log_file_path, "a", encoding="utf-8") as log_file:
+                            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            log_file.write(f"[{timestamp}] Unknown Speaker: {transcript}\n")
                         asyncio.run_coroutine_threadsafe(callback(f"Unknown Speaker: {transcript}"), main_loop)
         except Exception as e:
             print(f"Error processing result: {e}")

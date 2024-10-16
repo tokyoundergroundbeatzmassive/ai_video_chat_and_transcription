@@ -9,17 +9,21 @@
 </head>
 
 <body>
-    <div class="container">
-        <h1>Stream Control</h1>
+    <div class="button-container">
         <button id="startCameraBtn">Start Camera Stream</button>
         <button id="startWindowBtn">Start Window Stream</button>
         <button id="stopBtn">Stop Stream</button>
-        <!-- <button id="captureBtn">Capture Image</button> -->
         <button id="transcribeBtn">Transcribe</button>
         <button id="recordBtn">Record</button>
-        <div id="status"></div>
-        <video id="streamVideo" autoplay playsinline></video>
-        <audio id="audioPlayer"></audio>
+    </div>
+    <div class="content-container">
+        <div class="container">
+            <h1>Stream Control</h1>
+            <div id="status"></div>
+            <video id="streamVideo" autoplay playsinline></video>
+            <audio id="audioPlayer"></audio>
+            <div id="transcriptionHistory"></div>
+        </div>
     </div>
     <script type="module" src="./static/js/main.js"></script>
 </body>
